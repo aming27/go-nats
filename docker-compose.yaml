@@ -12,29 +12,23 @@ services:
   #   networks:
   #     - nats
 
-  nats-streaming:
-    container_name: nats-streaming
-    image: nats-streaming:latest
+  nats:
+    container_name: nats
+    image: nats:latest
     ports:
       - "8222:8222"
       - "4222:4222"
       - "6222:6222"
     networks: [ "nats" ]
     restart: always
+    volumes:
+      - datastore:/data
     command: [
-        '-p',
-        '4222',
-        '-m',
-        '8222',
-        '-hbi',
-        '5s',
-        '-hbt',
-        '5s',
-        '-hbf',
-        '2',
-        '-SD',
-        '-cid',
-        'microservice',
+      '-js',             # Habilitar JetStream
+      '-p', '4222',
+      '-m', '8222',
+      '-sd', '/data', # Tipo de almacenamiento (file)
+     
     ]
 
   mails_postgesql:
@@ -127,3 +121,5 @@ services:
 networks:
   nats:
     name: nats
+volumes:
+  datastore:

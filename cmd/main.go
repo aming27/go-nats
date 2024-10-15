@@ -4,6 +4,7 @@ import (
 	"aming/go-nats/config"
 	"aming/go-nats/internal/server"
 	"aming/go-nats/pkg/nats"
+	"aming/go-nats/pkg/postgresql"
 	"aming/go-nats/pkg/redis"
 
 	"log"
@@ -21,12 +22,18 @@ func main() {
 	}
 	log.Printf("Redis connected: %+v\n", redisClient.PoolStats())
 
-	natsConn, err := nats.JetStreamInit()
+	nats.JetStreamInit()
 	if err != nil {
 		log.Printf("JetStreamInit: %+v\n", err)
 	}
 
-	s := server.NewServer(cfg, redisClient, natsConn)
+	pgxPool, err := postgresql.NewPgxConn(cfg)
+	if err != nil {
+		log.Printf("NewPgxConn: %+v\n", err)
+	}
+	log.Printf("PostgreSQL connected: %+v", pgxPool.Stat().TotalConns())
+
+	s := server.NewServer(cfg, redisClient, pgxPool)
 	s.Run()
 }
 

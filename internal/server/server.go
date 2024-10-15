@@ -5,6 +5,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
@@ -12,20 +13,22 @@ import (
 )
 
 type server struct {
-	cfg   *config.Config
-	redis *redis.Client
-	echo  *echo.Echo
-	nats  nats.JetStreamContext
+	cfg     *config.Config
+	redis   *redis.Client
+	echo    *echo.Echo
+	nats    nats.JetStreamContext
+	pgxPool *pgxpool.Pool
 }
 
 func NewServer(
 	cfg *config.Config,
 	redis *redis.Client,
-	nats nats.JetStreamContext,
+	pgxPool *pgxpool.Pool,
+	//nats nats.JetStreamContext,
 
 ) *server {
 
-	return &server{cfg: cfg, redis: redis, nats: nats, echo: echo.New()}
+	return &server{cfg: cfg, redis: redis, pgxPool: pgxPool, echo: echo.New()}
 }
 
 func (s *server) Run() error {
