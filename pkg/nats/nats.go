@@ -2,6 +2,7 @@ package nats
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -17,22 +18,33 @@ const (
 	SubjectNameReviewAnswered = "REVIEWS.rateAnswer"
 )
 
-func JetStreamInit() {
+func JetStreamInit() (*nats.Conn, jetstream.JetStream, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	nc, _ := nats.Connect(nats.DefaultURL)
+
+	nc, err := nats.Connect(nats.DefaultURL)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to connect to NATS: %w", err)
+	}
 
 	// Create a JetStream management interface
 	js, _ := jetstream.New(nc)
+	if err != nil {
+		nc.Close()
+		return nil, nil, fmt.Errorf("failed to create JetStream management interface: %w", err)
+	}
 
 	// Create a stream
-	_, err := js.CreateStream(ctx, jetstream.StreamConfig{
-		Name:     "ORDERS",
-		Subjects: []string{"ORDERS.*"},
+	_, err = js.CreateStream(ctx, jetstream.StreamConfig{
+		Name:     StreamName,
+		Subjects: []string{StreamSubjects},
 	})
 	if err != nil {
-		log.Printf("Cannot create stream: %+v\n", err)
+		nc.Close()
+		return nil, nil, fmt.Errorf("failed to create stream: %w", err)
 	}
+
+	return nc, js, nil
 
 	// Connect to NATS
 	// nc, err := nats.Connect(nats.DefaultURL)

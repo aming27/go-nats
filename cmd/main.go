@@ -34,7 +34,8 @@ func main() {
 	log.Printf("PostgreSQL connected: %+v", pgxPool.Stat().TotalConns())
 
 	s := server.NewServer(cfg, redisClient, pgxPool)
-	s.Run()
+	log.Fatal(s.Run())
+
 }
 
 // Connect to Redis
