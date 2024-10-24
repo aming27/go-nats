@@ -2,15 +2,17 @@ package server
 
 import (
 	"aming/go-nats/config"
-	"aming/go-nats/pkg/smtp"
+	natsPublisher "aming/go-nats/internal/email/delivery/nats"
+	"aming/go-nats/internal/email/repository"
+	"aming/go-nats/internal/email/usecase"
+	"aming/go-nats/smtp"
 	"context"
 	"log"
+	"net/smtp"
 	"syscall"
 
 	"os"
 	"os/signal"
-
-	"log"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/labstack/echo/v4"
@@ -23,9 +25,10 @@ type server struct {
 	cfg     *config.Config
 	redis   *redis.Client
 	echo    *echo.Echo
-	nats    nats.JetStreamContext
+	nats    nats.Conn
 	pgxPool *pgxpool.Pool
 	log     *log.Logger
+	smtp    *smtp.Client
 }
 
 func NewServer(
@@ -43,7 +46,12 @@ func (s *server) Run() error {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
 	smtpClient := smtp.NewSmtpClient(s.cfg)
+	publisher, _ := natsPublisher.NewPublisher(s.cfg.Nats.URL)
+	emailPgRepo := repository.NewEmailPGRepository(s.pgxPool)
+	emailRedisRepo := repository.NewEmailRedisRepository(s.redis)
+	emailUC := usecase.NewEmailUseCase(s.log, emailPgRepo, publisher, smtpClient, emailRedisRepo)
 
 	//mv := middlewares.NewMiddlewareManager(s.log, s.cfg)
 
