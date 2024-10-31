@@ -1,11 +1,10 @@
 package email
 
 import (
+	"aming/go-nats/internal/models"
+	"aming/go-nats/pkg/utils"
 	"context"
 
-	"aming/go-nats/internal/models"
-
-	"github.com/AleksK1NG/nats-streaming/pkg/utils"
 	uuid "github.com/satori/go.uuid"
 )
 

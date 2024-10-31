@@ -21,12 +21,12 @@ type Email struct {
 
 // EmailsList emails list response with pagination
 type EmailsList struct {
-	TotalCount int64   `json:"totalCount"`
-	TotalPages int64   `json:"totalPages"`
-	Page       int64   `json:"page"`
-	Size       int64   `json:"size"`
-	HasMore    bool    `json:"hasMore"`
-	Emails     []Email `json:"emails"`
+	TotalCount int64    `json:"totalCount"`
+	TotalPages int64    `json:"totalPages"`
+	Page       int64    `json:"page"`
+	Size       int64    `json:"size"`
+	HasMore    bool     `json:"hasMore"`
+	Emails     []*Email `json:"emails"`
 }
 
 // ToProto convert email to proto
